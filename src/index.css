@@ -6,57 +6,98 @@
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 210 40% 98%;
+    --background: 250 20% 98%;
+    --foreground: 250 25% 10%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 250 25% 10%;
 
-    --popover: 220 18% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 250 25% 10%;
 
-    --primary: 185 70% 50%;
-    --primary-foreground: 220 20% 7%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 250 15% 95%;
+    --secondary-foreground: 250 25% 10%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 250 15% 92%;
+    --muted-foreground: 250 10% 45%;
 
-    --accent: 185 70% 50%;
-    --accent-foreground: 220 20% 7%;
+    --accent: 340 82% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 185 70% 50%;
+    --border: 250 15% 90%;
+    --input: 250 15% 90%;
+    --ring: 262 83% 58%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 220 18% 8%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 185 70% 50%;
+    /* Custom tokens */
+    --success: 152 69% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --habit-checked: 152 69% 45%;
+    --habit-unchecked: 250 15% 92%;
+    --progress-bg: 250 15% 92%;
+    --gradient-start: 262 83% 58%;
+    --gradient-end: 340 82% 60%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 262 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 15%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 185 70% 50%;
-
-    /* Custom colors */
-    --gradient-start: 185 70% 50%;
-    --gradient-end: 200 80% 45%;
-    --glass: 220 18% 12%;
-    --glass-border: 220 15% 25%;
-    --success: 150 70% 45%;
-    --warning: 40 90% 55%;
+    --sidebar-accent: 250 15% 95%;
+    --sidebar-accent-foreground: 250 25% 10%;
+    --sidebar-border: 250 15% 90%;
+    --sidebar-ring: 262 83% 58%;
   }
 
   .dark {
-    --background: 220 20% 7%;
-    --foreground: 210 40% 98%;
+    --background: 250 25% 8%;
+    --foreground: 250 10% 95%;
+
+    --card: 250 25% 12%;
+    --card-foreground: 250 10% 95%;
+
+    --popover: 250 25% 12%;
+    --popover-foreground: 250 10% 95%;
+
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 250 20% 18%;
+    --secondary-foreground: 250 10% 95%;
+
+    --muted: 250 20% 20%;
+    --muted-foreground: 250 10% 55%;
+
+    --accent: 340 82% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 250 20% 20%;
+    --input: 250 20% 20%;
+    --ring: 262 83% 65%;
+
+    --habit-checked: 152 69% 50%;
+    --habit-unchecked: 250 20% 20%;
+    --progress-bg: 250 20% 20%;
+
+    --sidebar-background: 250 25% 10%;
+    --sidebar-foreground: 250 10% 95%;
+    --sidebar-primary: 262 83% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 250 20% 18%;
+    --sidebar-accent-foreground: 250 10% 95%;
+    --sidebar-border: 250 20% 20%;
+    --sidebar-ring: 262 83% 65%;
   }
 }
 
@@ -67,50 +108,58 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
-  .glass-effect {
-    @apply bg-glass/80 backdrop-blur-xl border border-glass-border;
-  }
-
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
 
   .gradient-bg {
-    @apply bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
+    @apply bg-gradient-to-r from-primary to-accent;
+  }
+
+  .gradient-bg-subtle {
+    @apply bg-gradient-to-br from-primary/10 to-accent/10;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-200 ease-out hover:scale-105;
   }
 
   .hover-lift {
-    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10;
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg;
   }
 
-  .glow {
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.15);
+  .glass-effect {
+    @apply bg-card/80 backdrop-blur-xl border border-border;
   }
 }
 
 @layer components {
-  .nav-link {
-    @apply text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium;
+  .habit-cell {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200;
   }
 
-  .icon-btn {
-    @apply p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200;
+  .habit-cell-checked {
+    @apply bg-success text-success-foreground;
   }
 
-  .category-card {
-    @apply relative overflow-hidden rounded-2xl bg-card border border-border p-6 hover-lift cursor-pointer;
+  .habit-cell-unchecked {
+    @apply bg-muted hover:bg-muted/80;
   }
 
-  .product-card {
-    @apply relative overflow-hidden rounded-xl bg-card border border-border hover-lift cursor-pointer;
+  .progress-ring {
+    @apply transition-all duration-500 ease-out;
   }
 
-  .search-input {
-    @apply bg-secondary border-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50;
+  .stat-card {
+    @apply bg-card rounded-2xl p-6 border border-border hover-lift;
+  }
+
+  .habit-row {
+    @apply bg-card rounded-xl p-4 border border-border hover:border-primary/30 transition-colors duration-200;
   }
 }
