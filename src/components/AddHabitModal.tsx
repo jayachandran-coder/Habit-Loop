@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { z } from "zod";
 
 interface AddHabitModalProps {
   isOpen: boolean;
@@ -10,24 +11,50 @@ interface AddHabitModalProps {
   onAdd: (name: string, goal: number, icon: string) => void;
 }
 
+// Validation schema for habit creation
+const habitSchema = z.object({
+  name: z.string()
+    .min(1, "Habit name is required")
+    .max(100, "Habit name must be 100 characters or less")
+    .transform(val => val.trim()),
+  goal: z.number()
+    .int("Goal must be a whole number")
+    .min(1, "Goal must be at least 1")
+    .max(31, "Goal cannot exceed 31 days"),
+});
+
 const emojiOptions = ["🎯", "💪", "📚", "🏃", "🧘", "💧", "🥗", "😴", "🧹", "💰", "📝", "🎸", "🎨", "🌱", "❤️", "🦷"];
 
 const AddHabitModal = ({ isOpen, onClose, onAdd }: AddHabitModalProps) => {
   const [name, setName] = useState("");
   const [goal, setGoal] = useState(7);
   const [icon, setIcon] = useState("🎯");
+  const [errors, setErrors] = useState<{ name?: string; goal?: string }>({});
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      onAdd(name.trim(), goal, icon);
-      setName("");
-      setGoal(7);
-      setIcon("🎯");
-      onClose();
+    
+    // Validate with zod schema
+    const result = habitSchema.safeParse({ name, goal });
+    
+    if (!result.success) {
+      const fieldErrors: { name?: string; goal?: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0] === "name") fieldErrors.name = err.message;
+        if (err.path[0] === "goal") fieldErrors.goal = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
     }
+    
+    setErrors({});
+    onAdd(result.data.name, result.data.goal, icon);
+    setName("");
+    setGoal(7);
+    setIcon("🎯");
+    onClose();
   };
 
   return (
@@ -59,9 +86,16 @@ const AddHabitModal = ({ isOpen, onClose, onAdd }: AddHabitModalProps) => {
               type="text"
               placeholder="e.g., Drink 8 glasses of water"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1.5"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+              }}
+              maxLength={100}
+              className={`mt-1.5 ${errors.name ? "border-destructive" : ""}`}
             />
+            {errors.name && (
+              <p className="text-sm text-destructive mt-1">{errors.name}</p>
+            )}
           </div>
 
           <div>
@@ -74,9 +108,16 @@ const AddHabitModal = ({ isOpen, onClose, onAdd }: AddHabitModalProps) => {
               min={1}
               max={31}
               value={goal}
-              onChange={(e) => setGoal(parseInt(e.target.value) || 1)}
-              className="mt-1.5"
+              onChange={(e) => {
+                const parsed = parseInt(e.target.value);
+                setGoal(isNaN(parsed) ? 1 : Math.min(31, Math.max(1, parsed)));
+                if (errors.goal) setErrors((prev) => ({ ...prev, goal: undefined }));
+              }}
+              className={`mt-1.5 ${errors.goal ? "border-destructive" : ""}`}
             />
+            {errors.goal && (
+              <p className="text-sm text-destructive mt-1">{errors.goal}</p>
+            )}
           </div>
 
           <div>

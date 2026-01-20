@@ -61,19 +61,13 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Login failed",
-              description: "Invalid email or password. Please try again.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Login failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
+          // Map all auth errors to generic messages - never expose raw error details
+          console.error("Login error:", error.message); // Log for debugging only
+          toast({
+            title: "Login failed",
+            description: "Invalid email or password. Please try again.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Welcome back!",
@@ -83,19 +77,13 @@ const Auth = () => {
       } else {
         const { error } = await signUp(email, password);
         if (error) {
-          if (error.message.includes("User already registered")) {
-            toast({
-              title: "Sign up failed",
-              description: "An account with this email already exists. Please log in instead.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Sign up failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
+          // Map all auth errors to generic messages - never expose raw error details
+          console.error("Signup error:", error.message); // Log for debugging only
+          toast({
+            title: "Sign up failed",
+            description: "Unable to create account. Please try again or use a different email.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Account created!",

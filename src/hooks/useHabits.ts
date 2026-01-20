@@ -49,11 +49,20 @@ export const useHabits = () => {
   };
 
   const addHabit = (name: string, goal: number, icon: string) => {
+    // Validate inputs - defense in depth
+    const sanitizedName = String(name).trim().slice(0, 100);
+    const sanitizedGoal = Math.min(31, Math.max(1, Math.floor(Number(goal) || 1)));
+    
+    if (!sanitizedName) {
+      console.error("Invalid habit name");
+      return;
+    }
+    
     const newHabit: Habit = {
       id: Date.now().toString(),
-      name,
-      goal,
-      icon,
+      name: sanitizedName,
+      goal: sanitizedGoal,
+      icon: String(icon),
       color: ["primary", "success", "accent", "warning"][Math.floor(Math.random() * 4)],
       completedDays: [],
     };
