@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Habit {
   id: string;
@@ -9,68 +12,242 @@ export interface Habit {
   completedDays: number[];
 }
 
-const defaultHabits: Habit[] = [
-  { id: "1", name: "Stretch or do yoga", goal: 5, icon: "🧘", color: "primary", completedDays: [3, 11, 19, 24] },
-  { id: "2", name: "Walk 10,000 steps", goal: 7, icon: "🚶", color: "success", completedDays: [1, 4, 6, 7, 8, 22] },
-  { id: "3", name: "Read a book chapter", goal: 15, icon: "📚", color: "accent", completedDays: [1, 2, 4, 6, 7, 10, 12, 16, 20, 21] },
-  { id: "4", name: "Declutter a space", goal: 4, icon: "🧹", color: "warning", completedDays: [3, 10, 17, 24] },
-  { id: "5", name: "Floss", goal: 20, icon: "🦷", color: "primary", completedDays: [1, 3, 5, 7, 9, 11, 13, 15, 16, 18, 21] },
-  { id: "6", name: "Play guitar", goal: 10, icon: "🎸", color: "accent", completedDays: [2, 11, 12, 16, 19] },
-  { id: "7", name: "Call grandpa", goal: 10, icon: "📞", color: "success", completedDays: [1, 4, 6, 8, 12, 22] },
-  { id: "8", name: "Volunteer", goal: 3, icon: "❤️", color: "accent", completedDays: [15, 23] },
-  { id: "9", name: "Put $10 to savings", goal: 10, icon: "💰", color: "warning", completedDays: [3, 14, 18, 21] },
-];
+interface DbHabit {
+  id: string;
+  user_id: string;
+  name: string;
+  goal: number;
+  icon: string;
+  color: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DbCompletion {
+  id: string;
+  habit_id: string;
+  user_id: string;
+  completed_date: string;
+  created_at: string;
+}
 
 export const useHabits = () => {
-  const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = localStorage.getItem("habits");
-    return saved ? JSON.parse(saved) : defaultHabits;
-  });
-
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    localStorage.setItem("habits", JSON.stringify(habits));
-  }, [habits]);
+  // Fetch habits and completions from Supabase
+  const fetchHabits = useCallback(async () => {
+    if (!user) {
+      setHabits([]);
+      setLoading(false);
+      return;
+    }
 
-  const toggleDay = (habitId: string, day: number) => {
-    setHabits((prev) =>
-      prev.map((habit) => {
-        if (habit.id !== habitId) return habit;
-        const isCompleted = habit.completedDays.includes(day);
+    try {
+      // Fetch habits
+      const { data: habitsData, error: habitsError } = await supabase
+        .from("habits")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+
+      if (habitsError) throw habitsError;
+
+      // Fetch completions for the current month
+      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      
+      const { data: completionsData, error: completionsError } = await supabase
+        .from("habit_completions")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("completed_date", startOfMonth.toISOString().split("T")[0])
+        .lte("completed_date", endOfMonth.toISOString().split("T")[0]);
+
+      if (completionsError) throw completionsError;
+
+      // Map completions to habits
+      const habitsWithCompletions: Habit[] = (habitsData as DbHabit[] || []).map((habit) => {
+        const habitCompletions = (completionsData as DbCompletion[] || [])
+          .filter((c) => c.habit_id === habit.id)
+          .map((c) => new Date(c.completed_date).getDate());
+        
         return {
-          ...habit,
+          id: habit.id,
+          name: habit.name,
+          goal: habit.goal,
+          icon: habit.icon,
+          color: habit.color,
+          completedDays: habitCompletions.sort((a, b) => a - b),
+        };
+      });
+
+      setHabits(habitsWithCompletions);
+    } catch (error) {
+      console.error("Error fetching habits:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load habits. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, currentMonth, toast]);
+
+  // Fetch habits when user or month changes
+  useEffect(() => {
+    fetchHabits();
+  }, [fetchHabits]);
+
+  const toggleDay = async (habitId: string, day: number) => {
+    if (!user) return;
+
+    const habit = habits.find((h) => h.id === habitId);
+    if (!habit) return;
+
+    const isCompleted = habit.completedDays.includes(day);
+    const completedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+      .toISOString()
+      .split("T")[0];
+
+    // Optimistic update
+    setHabits((prev) =>
+      prev.map((h) => {
+        if (h.id !== habitId) return h;
+        return {
+          ...h,
           completedDays: isCompleted
-            ? habit.completedDays.filter((d) => d !== day)
-            : [...habit.completedDays, day].sort((a, b) => a - b),
+            ? h.completedDays.filter((d) => d !== day)
+            : [...h.completedDays, day].sort((a, b) => a - b),
         };
       })
     );
+
+    try {
+      if (isCompleted) {
+        // Remove completion
+        const { error } = await supabase
+          .from("habit_completions")
+          .delete()
+          .eq("habit_id", habitId)
+          .eq("completed_date", completedDate);
+
+        if (error) throw error;
+      } else {
+        // Add completion
+        const { error } = await supabase
+          .from("habit_completions")
+          .insert({
+            habit_id: habitId,
+            user_id: user.id,
+            completed_date: completedDate,
+          });
+
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error("Error toggling day:", error);
+      // Revert optimistic update
+      fetchHabits();
+      toast({
+        title: "Error",
+        description: "Failed to update completion. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const addHabit = (name: string, goal: number, icon: string) => {
+  const addHabit = async (name: string, goal: number, icon: string) => {
+    if (!user) return;
+
     // Validate inputs - defense in depth
     const sanitizedName = String(name).trim().slice(0, 100);
     const sanitizedGoal = Math.min(31, Math.max(1, Math.floor(Number(goal) || 1)));
-    
+
     if (!sanitizedName) {
       console.error("Invalid habit name");
       return;
     }
-    
-    const newHabit: Habit = {
-      id: Date.now().toString(),
-      name: sanitizedName,
-      goal: sanitizedGoal,
-      icon: String(icon),
-      color: ["primary", "success", "accent", "warning"][Math.floor(Math.random() * 4)],
-      completedDays: [],
-    };
-    setHabits((prev) => [...prev, newHabit]);
+
+    const color = ["primary", "success", "accent", "warning"][Math.floor(Math.random() * 4)];
+
+    try {
+      const { data, error } = await supabase
+        .from("habits")
+        .insert({
+          user_id: user.id,
+          name: sanitizedName,
+          goal: sanitizedGoal,
+          icon: String(icon),
+          color,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newHabit: Habit = {
+        id: data.id,
+        name: data.name,
+        goal: data.goal,
+        icon: data.icon,
+        color: data.color,
+        completedDays: [],
+      };
+
+      setHabits((prev) => [...prev, newHabit]);
+      
+      toast({
+        title: "Habit added",
+        description: `"${sanitizedName}" has been added to your habits.`,
+      });
+    } catch (error) {
+      console.error("Error adding habit:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add habit. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const removeHabit = (habitId: string) => {
+  const removeHabit = async (habitId: string) => {
+    if (!user) return;
+
+    const habitToRemove = habits.find((h) => h.id === habitId);
+    
+    // Optimistic update
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
+
+    try {
+      const { error } = await supabase
+        .from("habits")
+        .delete()
+        .eq("id", habitId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      if (habitToRemove) {
+        toast({
+          title: "Habit removed",
+          description: `"${habitToRemove.name}" has been removed.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error removing habit:", error);
+      // Revert optimistic update
+      fetchHabits();
+      toast({
+        title: "Error",
+        description: "Failed to remove habit. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getDaysInMonth = () => {
@@ -93,6 +270,7 @@ export const useHabits = () => {
 
   return {
     habits,
+    loading,
     currentMonth,
     setCurrentMonth,
     toggleDay,
