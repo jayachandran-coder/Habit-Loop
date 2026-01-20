@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useHabits } from "@/hooks/useHabits";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import StatsCards from "@/components/StatsCards";
 import HabitRow from "@/components/HabitRow";
 import AddHabitModal from "@/components/AddHabitModal";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 const Index = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const {
     habits,
     currentMonth,
@@ -20,6 +27,30 @@ const Index = () => {
   } = useHabits();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -38,6 +69,20 @@ const Index = () => {
       </div>
 
       <div className="relative container mx-auto px-4 py-8 max-w-5xl">
+        {/* User bar */}
+        <div className="flex justify-end items-center gap-4 mb-4">
+          <span className="text-sm text-muted-foreground">{user.email}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+
         <Header
           currentMonth={currentMonth}
           onPrevMonth={handlePrevMonth}
