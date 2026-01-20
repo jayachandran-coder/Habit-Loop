@@ -15,11 +15,16 @@ const Header = ({ currentMonth, onPrevMonth, onNextMonth, onAddHabit }: HeaderPr
   return (
     <header className="mb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-1">
-            <span className="gradient-text">Monthly</span> Habit Tracker
-          </h1>
-          <p className="text-muted-foreground">Build better habits, one day at a time</p>
+      <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center">
+              <span className="text-lg">🔄</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              <span className="gradient-text">habit</span>-loop
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm">Build better habits, one day at a time</p>
         </div>
 
         <Button 
