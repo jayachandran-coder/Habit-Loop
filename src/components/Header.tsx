@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plus, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
@@ -15,16 +15,16 @@ const Header = ({ currentMonth, onPrevMonth, onNextMonth, onAddHabit }: HeaderPr
   return (
     <header className="mb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center">
-              <span className="text-lg">🔄</span>
+        <div>
+          <p className="text-sm text-muted-foreground mb-1">Monthly Habit Tracker</p>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl gradient-bg flex items-center justify-center">
+              <span className="text-xl">🔄</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold">
+            <h1 className="text-3xl sm:text-4xl font-bold">
               <span className="gradient-text">habit</span>-loop
             </h1>
           </div>
-          <p className="text-muted-foreground text-sm">Build better habits, one day at a time</p>
         </div>
 
         <Button 

@@ -7,7 +7,7 @@ import StatsCards from "@/components/StatsCards";
 import HabitRow from "@/components/HabitRow";
 import AddHabitModal from "@/components/AddHabitModal";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -72,7 +72,12 @@ const Index = () => {
       <div className="relative container mx-auto px-4 py-8 max-w-5xl">
         {/* User bar */}
         <div className="flex justify-end items-center gap-4 mb-4">
-          <span className="text-sm text-muted-foreground">{user.email}</span>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center">
+              <User className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
