@@ -218,6 +218,45 @@ export const useHabits = () => {
     }
   };
 
+  const editHabit = async (habitId: string, name: string, goal: number, icon: string) => {
+    if (!user) return;
+
+    const sanitizedName = String(name).trim().slice(0, 100);
+    const sanitizedGoal = Math.min(31, Math.max(1, Math.floor(Number(goal) || 1)));
+
+    if (!sanitizedName) return;
+
+    // Optimistic update
+    setHabits((prev) =>
+      prev.map((h) =>
+        h.id === habitId ? { ...h, name: sanitizedName, goal: sanitizedGoal, icon: String(icon) } : h
+      )
+    );
+
+    try {
+      const { error } = await supabase
+        .from("habits")
+        .update({ name: sanitizedName, goal: sanitizedGoal, icon: String(icon) })
+        .eq("id", habitId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Habit updated",
+        description: `"${sanitizedName}" has been updated.`,
+      });
+    } catch (error) {
+      console.error("Error editing habit:", error);
+      fetchHabits();
+      toast({
+        title: "Error",
+        description: "Failed to update habit. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const removeHabit = async (habitId: string) => {
     if (!user) return;
 
@@ -278,6 +317,7 @@ export const useHabits = () => {
     setCurrentMonth,
     toggleDay,
     addHabit,
+    editHabit,
     removeHabit,
     getDaysInMonth,
     getSuccessRate,

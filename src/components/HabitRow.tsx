@@ -1,4 +1,4 @@
-import { Check, Trash2 } from "lucide-react";
+import { Check, Trash2, Pencil } from "lucide-react";
 import { Habit } from "@/hooks/useHabits";
 import { Progress } from "@/components/ui/progress";
 
@@ -7,9 +7,10 @@ interface HabitRowProps {
   daysInMonth: number;
   onToggleDay: (habitId: string, day: number) => void;
   onRemove: (habitId: string) => void;
+  onEdit: (habit: Habit) => void;
 }
 
-const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove }: HabitRowProps) => {
+const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRowProps) => {
   const progress = Math.min((habit.completedDays.length / habit.goal) * 100, 100);
   const progressColor = 
     habit.color === "success" ? "bg-success" :
@@ -34,6 +35,12 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove }: HabitRowProps) 
           <div className="text-right hidden sm:block">
             <p className="text-lg font-bold">{Math.round(progress)}%</p>
           </div>
+          <button
+            onClick={() => onEdit(habit)}
+            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
           <button
             onClick={() => onRemove(habit.id)}
             className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
