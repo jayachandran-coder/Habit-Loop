@@ -8,8 +8,9 @@ import StatsCards from "@/components/StatsCards";
 import HabitRow from "@/components/HabitRow";
 import AddHabitModal from "@/components/AddHabitModal";
 import EditHabitModal from "@/components/EditHabitModal";
+import HabitSuggestionsModal from "@/components/HabitSuggestionsModal";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Sparkles } from "lucide-react";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -32,6 +33,7 @@ const Index = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -111,9 +113,21 @@ const Index = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Your Habits</h2>
-            <p className="text-sm text-muted-foreground">
-              {getDaysInMonth()} days in {currentMonth.toLocaleString("default", { month: "long" })}
-            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSuggestOpen(true)}
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/5"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">Suggest with AI</span>
+                <span className="sm:hidden">AI</span>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                {getDaysInMonth()} days in {currentMonth.toLocaleString("default", { month: "long" })}
+              </p>
+            </div>
           </div>
 
           {habits.length === 0 ? (
@@ -160,6 +174,12 @@ const Index = () => {
         habit={editingHabit}
         onClose={() => setEditingHabit(null)}
         onSave={editHabit}
+      />
+
+      <HabitSuggestionsModal
+        isOpen={isSuggestOpen}
+        onClose={() => setIsSuggestOpen(false)}
+        onAddHabit={addHabit}
       />
     </div>
   );
