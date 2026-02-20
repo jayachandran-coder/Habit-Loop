@@ -56,16 +56,19 @@ export const useHabits = () => {
 
       if (habitsError) throw habitsError;
 
-      // Fetch completions for the current month
-      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      // Fetch completions for the current month (use local date strings to avoid UTC timezone shift)
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth() + 1;
+      const daysInCurrentMonth = new Date(year, month, 0).getDate();
+      const startOfMonth = `${year}-${String(month).padStart(2, "0")}-01`;
+      const endOfMonth = `${year}-${String(month).padStart(2, "0")}-${String(daysInCurrentMonth).padStart(2, "0")}`;
       
       const { data: completionsData, error: completionsError } = await supabase
         .from("habit_completions")
         .select("*")
         .eq("user_id", user.id)
-        .gte("completed_date", startOfMonth.toISOString().split("T")[0])
-        .lte("completed_date", endOfMonth.toISOString().split("T")[0]);
+        .gte("completed_date", startOfMonth)
+        .lte("completed_date", endOfMonth);
 
       if (completionsError) throw completionsError;
 
@@ -73,7 +76,7 @@ export const useHabits = () => {
       const habitsWithCompletions: Habit[] = (habitsData as DbHabit[] || []).map((habit) => {
         const habitCompletions = (completionsData as DbCompletion[] || [])
           .filter((c) => c.habit_id === habit.id)
-          .map((c) => new Date(c.completed_date).getDate());
+          .map((c) => parseInt(c.completed_date.split("-")[2], 10));
         
         return {
           id: habit.id,
@@ -110,9 +113,9 @@ export const useHabits = () => {
     if (!habit) return;
 
     const isCompleted = habit.completedDays.includes(day);
-    const completedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-      .toISOString()
-      .split("T")[0];
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth() + 1;
+    const completedDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     // Optimistic update
     setHabits((prev) =>
