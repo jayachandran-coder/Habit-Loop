@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHabits } from "@/hooks/useHabits";
 import { useAuth } from "@/hooks/useAuth";
+import { Habit } from "@/hooks/useHabits";
 import Header from "@/components/Header";
 import StatsCards from "@/components/StatsCards";
 import HabitRow from "@/components/HabitRow";
 import AddHabitModal from "@/components/AddHabitModal";
+import EditHabitModal from "@/components/EditHabitModal";
 import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 
@@ -20,6 +22,7 @@ const Index = () => {
     setCurrentMonth,
     toggleDay,
     addHabit,
+    editHabit,
     removeHabit,
     getDaysInMonth,
     getSuccessRate,
@@ -28,6 +31,7 @@ const Index = () => {
   } = useHabits();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -134,6 +138,7 @@ const Index = () => {
                 daysInMonth={getDaysInMonth()}
                 onToggleDay={toggleDay}
                 onRemove={removeHabit}
+                onEdit={setEditingHabit}
               />
             ))
           )}
@@ -149,6 +154,12 @@ const Index = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={addHabit}
+      />
+
+      <EditHabitModal
+        habit={editingHabit}
+        onClose={() => setEditingHabit(null)}
+        onSave={editHabit}
       />
     </div>
   );
