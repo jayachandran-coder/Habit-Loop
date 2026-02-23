@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHabits } from "@/hooks/useHabits";
 import { useAuth } from "@/hooks/useAuth";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Habit } from "@/hooks/useHabits";
 import Header from "@/components/Header";
 import StatsCards from "@/components/StatsCards";
@@ -10,7 +11,7 @@ import AddHabitModal from "@/components/AddHabitModal";
 import EditHabitModal from "@/components/EditHabitModal";
 import HabitSuggestionsModal from "@/components/HabitSuggestionsModal";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Sparkles } from "lucide-react";
+import { LogOut, User, Sparkles, Bell, BellOff } from "lucide-react";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -34,7 +35,7 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [isSuggestOpen, setIsSuggestOpen] = useState(false);
-
+  const { isSubscribed, loading: notifLoading, subscribe, unsubscribe } = usePushNotifications(user?.id);
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!loading && !user) {
@@ -77,7 +78,18 @@ const Index = () => {
 
       <div className="relative container mx-auto px-4 py-8 max-w-5xl">
         {/* User bar */}
-        <div className="flex justify-end items-center gap-4 mb-4">
+        <div className="flex justify-end items-center gap-2 mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={isSubscribed ? unsubscribe : subscribe}
+            disabled={notifLoading}
+            className={`text-muted-foreground hover:text-foreground ${isSubscribed ? "text-primary" : ""}`}
+            title={isSubscribed ? "Disable notifications" : "Enable daily reminders"}
+          >
+            {isSubscribed ? <Bell className="h-4 w-4 mr-2" /> : <BellOff className="h-4 w-4 mr-2" />}
+            <span className="hidden sm:inline">{isSubscribed ? "Reminders On" : "Reminders"}</span>
+          </Button>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center">
               <User className="w-5 h-5 text-primary-foreground" />
