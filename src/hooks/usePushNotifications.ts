@@ -2,9 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+export function formatHour(hour: number): string {
+  const h = hour % 12 || 12;
+  const ampm = hour < 12 ? "AM" : "PM";
+  return `${h}:00 ${ampm}`;
+}
+
 export const usePushNotifications = (userId: string | undefined) => {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [preferredHour, setPreferredHour] = useState<number>(20);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -14,16 +21,20 @@ export const usePushNotifications = (userId: string | undefined) => {
     }
   }, []);
 
-  // Check if user already has a subscription
   useEffect(() => {
     if (!userId) return;
     const checkSubscription = async () => {
       const { data } = await supabase
         .from("push_subscriptions")
-        .select("id")
+        .select("id, preferred_hour")
         .eq("user_id", userId)
         .limit(1);
-      setIsSubscribed(!!data && data.length > 0);
+      if (data && data.length > 0) {
+        setIsSubscribed(true);
+        setPreferredHour((data[0] as any).preferred_hour ?? 20);
+      } else {
+        setIsSubscribed(false);
+      }
     };
     checkSubscription();
   }, [userId]);
@@ -62,28 +73,28 @@ export const usePushNotifications = (userId: string | undefined) => {
 
       const subJson = subscription.toJSON();
 
-      // Upsert subscription
       const { error } = await supabase.from("push_subscriptions").upsert(
         {
           user_id: userId,
           endpoint: subJson.endpoint!,
           p256dh: subJson.keys!.p256dh,
           auth: subJson.keys!.auth,
-        },
+          preferred_hour: preferredHour,
+        } as any,
         { onConflict: "user_id" }
       );
 
       if (error) throw error;
 
       setIsSubscribed(true);
-      toast({ title: "Notifications enabled! 🔔", description: "You'll receive daily reminders for incomplete habits." });
+      toast({ title: "Notifications enabled! 🔔", description: `You'll receive reminders at ${formatHour(preferredHour)} UTC.` });
     } catch (e) {
       console.error("Push subscription error:", e);
       toast({ title: "Failed to enable notifications", description: String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  }, [userId, toast, preferredHour]);
 
   const unsubscribe = useCallback(async () => {
     if (!userId) return;
@@ -107,7 +118,21 @@ export const usePushNotifications = (userId: string | undefined) => {
     }
   }, [userId, toast]);
 
-  return { permission, isSubscribed, loading, subscribe, unsubscribe };
+  const updatePreferredHour = useCallback(async (hour: number) => {
+    setPreferredHour(hour);
+    if (!userId || !isSubscribed) return;
+    try {
+      await supabase
+        .from("push_subscriptions")
+        .update({ preferred_hour: hour } as any)
+        .eq("user_id", userId);
+      toast({ title: "Reminder time updated", description: `You'll be reminded at ${formatHour(hour)} UTC.` });
+    } catch (e) {
+      console.error("Update preferred hour error:", e);
+    }
+  }, [userId, isSubscribed, toast]);
+
+  return { permission, isSubscribed, loading, subscribe, unsubscribe, preferredHour, updatePreferredHour };
 };
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

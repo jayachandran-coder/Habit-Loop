@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHabits } from "@/hooks/useHabits";
 import { useAuth } from "@/hooks/useAuth";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { usePushNotifications, formatHour } from "@/hooks/usePushNotifications";
 import { Habit } from "@/hooks/useHabits";
 import Header from "@/components/Header";
 import StatsCards from "@/components/StatsCards";
@@ -11,7 +11,14 @@ import AddHabitModal from "@/components/AddHabitModal";
 import EditHabitModal from "@/components/EditHabitModal";
 import HabitSuggestionsModal from "@/components/HabitSuggestionsModal";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Sparkles, Bell, BellOff } from "lucide-react";
+import { LogOut, User, Sparkles, Bell, BellOff, Clock } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -35,7 +42,7 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [isSuggestOpen, setIsSuggestOpen] = useState(false);
-  const { isSubscribed, loading: notifLoading, subscribe, unsubscribe } = usePushNotifications(user?.id);
+  const { isSubscribed, loading: notifLoading, subscribe, unsubscribe, preferredHour, updatePreferredHour } = usePushNotifications(user?.id);
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!loading && !user) {
@@ -90,6 +97,24 @@ const Index = () => {
             {isSubscribed ? <Bell className="h-4 w-4 mr-2" /> : <BellOff className="h-4 w-4 mr-2" />}
             <span className="hidden sm:inline">{isSubscribed ? "Reminders On" : "Reminders"}</span>
           </Button>
+          {isSubscribed && (
+            <Select
+              value={String(preferredHour)}
+              onValueChange={(val) => updatePreferredHour(Number(val))}
+            >
+              <SelectTrigger className="w-[130px] h-8 text-xs">
+                <Clock className="h-3 w-3 mr-1" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>
+                    {formatHour(i)} UTC
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center">
               <User className="w-5 h-5 text-primary-foreground" />
