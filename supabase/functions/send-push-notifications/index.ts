@@ -99,7 +99,7 @@ async function encryptPayload(
   // Import subscriber's public key
   const subscriberPublicKey = await crypto.subtle.importKey(
     "raw",
-    base64UrlToBytes(p256dhKey),
+    base64UrlToBytes(p256dhKey).buffer as ArrayBuffer,
     { name: "ECDH", namedCurve: "P-256" },
     false,
     []
@@ -129,13 +129,13 @@ async function encryptPayload(
   const nonce = await hkdf(salt, prk, nonceInfo, 12);
 
   // Encrypt with AES-GCM
-  const aesKey = await crypto.subtle.importKey("raw", contentKey, "AES-GCM", false, ["encrypt"]);
+  const aesKey = await crypto.subtle.importKey("raw", contentKey.buffer as ArrayBuffer, "AES-GCM", false, ["encrypt"]);
   const paddedPayload = new Uint8Array(2 + new TextEncoder().encode(payload).length);
   paddedPayload.set([0, 0]); // 2-byte padding length (0)
   paddedPayload.set(new TextEncoder().encode(payload), 2);
 
   const encrypted = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, paddedPayload)
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce.buffer as ArrayBuffer }, aesKey, paddedPayload.buffer as ArrayBuffer)
   );
 
   return { ciphertext: encrypted, salt, localPublicKey: localPublicKeyRaw };
@@ -159,8 +159,8 @@ function createInfo(type: string, subscriberPublicKey: Uint8Array, localPublicKe
 }
 
 async function hkdf(salt: Uint8Array, ikm: Uint8Array, info: Uint8Array, length: number): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey("raw", ikm, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", key, salt));
+  const key = await crypto.subtle.importKey("raw", ikm.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", key, salt.buffer as ArrayBuffer));
 
   const prkKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const infoWithCounter = new Uint8Array(info.length + 1);
@@ -198,7 +198,7 @@ async function sendPushNotification(
         Authorization: `WebPush ${jwt}`,
         TTL: "86400",
       },
-      body: ciphertext,
+      body: ciphertext.buffer as ArrayBuffer,
     });
 
     if (!response.ok) {

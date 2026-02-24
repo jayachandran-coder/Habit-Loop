@@ -1,6 +1,17 @@
 import { Check, Trash2, Pencil } from "lucide-react";
 import { Habit } from "@/hooks/useHabits";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface HabitRowProps {
   habit: Habit;
@@ -41,12 +52,27 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
           >
             <Pencil className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => onRemove(habit.id)}
-            className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete "{habit.name}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove this habit and all its completion data. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onRemove(habit.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
