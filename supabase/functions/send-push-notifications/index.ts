@@ -226,10 +226,19 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Get all users with push subscriptions
-    const { data: subscriptions, error: subError } = await supabase
-      .from("push_subscriptions")
-      .select("*");
+    // Parse the requested hour from the body (sent by cron)
+    let targetHour: number | null = null;
+    try {
+      const body = await req.json();
+      if (typeof body.hour === "number") targetHour = body.hour;
+    } catch { /* no body = send to all */ }
+
+    // Get subscriptions filtered by preferred hour
+    let query = supabase.from("push_subscriptions").select("*");
+    if (targetHour !== null) {
+      query = query.eq("preferred_hour", targetHour);
+    }
+    const { data: subscriptions, error: subError } = await query;
 
     if (subError) throw subError;
     if (!subscriptions || subscriptions.length === 0) {
