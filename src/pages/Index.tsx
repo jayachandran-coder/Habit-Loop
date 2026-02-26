@@ -10,6 +10,7 @@ import HabitRow from "@/components/HabitRow";
 import AddHabitModal from "@/components/AddHabitModal";
 import EditHabitModal from "@/components/EditHabitModal";
 import HabitSuggestionsModal from "@/components/HabitSuggestionsModal";
+import HabitCharts from "@/components/HabitCharts";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Sparkles, Bell, BellOff, Clock } from "lucide-react";
 import {
@@ -145,6 +146,8 @@ const Index = () => {
           totalGoals={getTotalGoals()}
           habitCount={habits.length}
         />
+
+        <HabitCharts habits={habits} currentMonth={currentMonth} daysInMonth={getDaysInMonth()} />
 
         {/* Habits List */}
         <div className="space-y-4">
