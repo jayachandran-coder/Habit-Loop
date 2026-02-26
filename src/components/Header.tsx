@@ -46,34 +46,7 @@ const Header = ({
 
   return (
     <header className="mb-8">
-      {/* Profile icon + expandable details */}
-      <div className="flex justify-end mb-4">
-        <div className="relative">
-          <button
-            onClick={() => setProfileOpen((p) => !p)}
-            className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center hover:opacity-90 transition-opacity"
-          >
-            <User className="w-5 h-5 text-primary-foreground" />
-          </button>
-          {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-card rounded-xl border border-border shadow-lg p-4 z-50 animate-fade-in">
-              <p className="text-sm font-medium truncate">{userEmail}</p>
-              <p className="text-xs text-muted-foreground font-mono truncate mt-1">{userId}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onSignOut}
-                className="w-full mt-3 text-muted-foreground hover:text-foreground gap-2 justify-start"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Brand + Add Habit + Reminders */}
+      {/* Brand + Add Habit + Reminders + Profile */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground mb-1">Monthly Habit Tracker</p>
@@ -125,6 +98,31 @@ const Header = ({
               </SelectContent>
             </Select>
           )}
+
+          {/* Profile icon */}
+          <div className="relative">
+            <button
+              onClick={() => setProfileOpen((p) => !p)}
+              className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center hover:opacity-90 transition-opacity"
+            >
+              <User className="w-4 h-4 text-primary-foreground" />
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-card rounded-xl border border-border shadow-lg p-4 z-50 animate-fade-in">
+                <p className="text-sm font-medium truncate">{userEmail}</p>
+                <p className="text-xs text-muted-foreground font-mono truncate mt-1">{userId}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSignOut}
+                  className="w-full mt-3 text-muted-foreground hover:text-foreground gap-2 justify-start"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
