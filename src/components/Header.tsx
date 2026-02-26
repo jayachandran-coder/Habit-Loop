@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar, User, LogOut, Bell, BellOff, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,31 +40,37 @@ const Header = ({
   preferredHour,
   onUpdateHour,
 }: HeaderProps) => {
+  const [profileOpen, setProfileOpen] = useState(false);
   const monthName = currentMonth.toLocaleString("default", { month: "long" });
   const year = currentMonth.getFullYear();
 
   return (
     <header className="mb-8">
-      {/* Profile bar */}
-      <div className="flex items-center justify-between mb-6 bg-card rounded-2xl p-4 border border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center">
+      {/* Profile icon + expandable details */}
+      <div className="flex justify-end mb-4">
+        <div className="relative">
+          <button
+            onClick={() => setProfileOpen((p) => !p)}
+            className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center hover:opacity-90 transition-opacity"
+          >
             <User className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{userEmail}</p>
-            <p className="text-xs text-muted-foreground font-mono truncate">{userId}</p>
-          </div>
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-card rounded-xl border border-border shadow-lg p-4 z-50 animate-fade-in">
+              <p className="text-sm font-medium truncate">{userEmail}</p>
+              <p className="text-xs text-muted-foreground font-mono truncate mt-1">{userId}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onSignOut}
+                className="w-full mt-3 text-muted-foreground hover:text-foreground gap-2 justify-start"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onSignOut}
-          className="text-muted-foreground hover:text-foreground gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Sign Out</span>
-        </Button>
       </div>
 
       {/* Brand + Add Habit + Reminders */}
