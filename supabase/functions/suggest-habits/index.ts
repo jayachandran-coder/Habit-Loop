@@ -22,14 +22,15 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a habit coach and behavioral psychologist. Based on a user's personality quiz answers, suggest 5 highly personalized daily habits that will genuinely help them improve their life. 
-    
-    Each habit should:
-    - Be specific and actionable
-    - Match their schedule and lifestyle
-    - Address their goals and challenges
-    - Be realistic (not overly ambitious)
-    - Have a motivational description
+    const systemPrompt = `You are a friendly habit coach. Based on a user's quiz answers, suggest 5 simple daily habits that will help them improve their life.
+
+    Rules for your suggestions:
+    - Use very simple, easy English that anyone can understand
+    - Keep habit names short (2-5 words)
+    - Write descriptions like you're talking to a friend - casual and warm
+    - No big or fancy words - use everyday language
+    - Make habits easy to do, not too hard
+    - Each description should be 1 short sentence explaining why it helps
     
     Always use tool calling to return structured habit suggestions.`;
 
@@ -41,7 +42,7 @@ Peak Productive Time: ${answers.productiveTime}
 Biggest Challenge: ${answers.biggestChallenge}
 Preferred Growth Style: ${answers.preferredGrowth}
 
-Suggest 5 personalized habits tailored to this person's personality and goals.`;
+Suggest 5 simple, easy-to-do habits for this person. Use simple English words only.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -69,8 +70,8 @@ Suggest 5 personalized habits tailored to this person's personality and goals.`;
                     items: {
                       type: "object",
                       properties: {
-                        name: { type: "string", description: "Short habit name (max 50 chars)" },
-                        description: { type: "string", description: "Why this habit suits them (1-2 sentences)" },
+                        name: { type: "string", description: "Short habit name in simple English (2-5 words, max 50 chars)" },
+                        description: { type: "string", description: "One simple sentence about why this habit helps, using easy everyday words" },
                         icon: { type: "string", description: "Single emoji that represents this habit" },
                         goal: { type: "number", description: "Recommended monthly goal (days, 1-30)" },
                         category: { type: "string", enum: ["health", "learning", "productivity", "mindfulness", "social"] },
