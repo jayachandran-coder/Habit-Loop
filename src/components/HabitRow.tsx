@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Check, Trash2, Pencil } from "lucide-react";
 import { Habit } from "@/hooks/useHabits";
 import { Progress } from "@/components/ui/progress";
@@ -22,6 +23,7 @@ interface HabitRowProps {
 }
 
 const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRowProps) => {
+  const [confirmUntick, setConfirmUntick] = useState<number | null>(null);
   const progress = Math.min((habit.completedDays.length / habit.goal) * 100, 100);
   const progressColor = 
     habit.color === "success" ? "bg-success" :
@@ -96,7 +98,13 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
           return (
             <button
               key={day}
-              onClick={() => onToggleDay(habit.id, day)}
+              onClick={() => {
+                if (isCompleted) {
+                  setConfirmUntick(day);
+                } else {
+                  onToggleDay(habit.id, day);
+                }
+              }}
               className={`habit-cell ${
                 isCompleted ? "habit-cell-checked" : "habit-cell-unchecked"
               }`}
@@ -110,6 +118,31 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
           );
         })}
       </div>
+
+      {/* Untick confirmation dialog */}
+      <AlertDialog open={confirmUntick !== null} onOpenChange={(open) => !open && setConfirmUntick(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unmark day {confirmUntick}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unmark this day as completed for "{habit.name}"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmUntick !== null) {
+                  onToggleDay(habit.id, confirmUntick);
+                  setConfirmUntick(null);
+                }
+              }}
+            >
+              Unmark
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
