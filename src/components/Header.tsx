@@ -48,6 +48,7 @@ const Header = ({
     <header className="mb-8">
       {/* Brand + Add Habit + Reminders + Profile */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Brand */}
         <div>
           <p className="text-sm text-muted-foreground mb-1">Monthly Habit Tracker</p>
           <div className="flex items-center gap-3">
@@ -60,6 +61,27 @@ const Header = ({
           </div>
         </div>
 
+        {/* Month navigator (inline) */}
+        <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-2 border border-border">
+          <button
+            onClick={onPrevMonth}
+            className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm whitespace-nowrap">{monthName} {year}</span>
+          </div>
+          <button
+            onClick={onNextMonth}
+            className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Actions */}
         <div className="flex items-center gap-2">
           <Button
             onClick={onAddHabit}
@@ -126,32 +148,6 @@ const Header = ({
         </div>
       </div>
 
-      {/* Month navigator */}
-      <div className="flex items-center justify-between mt-6 bg-card rounded-2xl p-4 border border-border">
-        <button
-          onClick={onPrevMonth}
-          className="p-2 rounded-xl hover:bg-secondary transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div className="text-center">
-            <h2 className="text-xl font-bold">{monthName}</h2>
-            <p className="text-sm text-muted-foreground">{year}</p>
-          </div>
-        </div>
-
-        <button
-          onClick={onNextMonth}
-          className="p-2 rounded-xl hover:bg-secondary transition-colors"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
     </header>
   );
 };
