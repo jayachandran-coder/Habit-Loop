@@ -36,6 +36,9 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
           <span className="text-2xl">{habit.icon}</span>
           <div>
             <h3 className="font-semibold">{habit.name}</h3>
+            {habit.description && (
+              <p className="text-xs text-muted-foreground leading-relaxed">{habit.description}</p>
+            )}
             <p className="text-sm text-muted-foreground">
               Goal: {habit.goal} days • {habit.completedDays.length} done
             </p>

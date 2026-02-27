@@ -15,7 +15,7 @@ interface SuggestedHabit {
 interface HabitSuggestionsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddHabit: (name: string, goal: number, icon: string) => void;
+  onAddHabit: (name: string, goal: number, icon: string, description?: string) => void;
 }
 
 const questions = [
@@ -136,7 +136,7 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
   };
 
   const handleAddHabit = (habit: SuggestedHabit, index: number) => {
-    onAddHabit(habit.name, habit.goal, habit.icon);
+    onAddHabit(habit.name, habit.goal, habit.icon, habit.description);
     setAddedHabits((prev) => new Set([...prev, index]));
   };
 

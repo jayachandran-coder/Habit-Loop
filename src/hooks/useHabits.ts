@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface Habit {
   id: string;
   name: string;
+  description: string;
   goal: number;
   icon: string;
   color: string;
@@ -81,6 +82,7 @@ export const useHabits = () => {
         return {
           id: habit.id,
           name: habit.name,
+          description: (habit as any).description || "",
           goal: habit.goal,
           icon: habit.icon,
           color: habit.color,
@@ -164,7 +166,7 @@ export const useHabits = () => {
     }
   };
 
-  const addHabit = async (name: string, goal: number, icon: string) => {
+  const addHabit = async (name: string, goal: number, icon: string, description: string = "") => {
     if (!user) return;
 
     // Validate inputs - defense in depth
@@ -187,6 +189,7 @@ export const useHabits = () => {
           goal: sanitizedGoal,
           icon: String(icon),
           color,
+          description: String(description).slice(0, 500),
         })
         .select()
         .single();
@@ -196,6 +199,7 @@ export const useHabits = () => {
       const newHabit: Habit = {
         id: data.id,
         name: data.name,
+        description: (data as any).description || "",
         goal: data.goal,
         icon: data.icon,
         color: data.color,
