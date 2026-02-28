@@ -88,8 +88,22 @@ const categoryColors: Record<string, string> = {
   social: "bg-pink-500/10 text-pink-600 border-pink-200",
 };
 
+const languages = [
+  { value: "English", label: "English", emoji: "🇬🇧" },
+  { value: "Tamil", label: "தமிழ்", emoji: "🇮🇳" },
+  { value: "Hindi", label: "हिन्दी", emoji: "🇮🇳" },
+  { value: "Spanish", label: "Español", emoji: "🇪🇸" },
+  { value: "French", label: "Français", emoji: "🇫🇷" },
+  { value: "Arabic", label: "العربية", emoji: "🇸🇦" },
+  { value: "Chinese", label: "中文", emoji: "🇨🇳" },
+  { value: "Japanese", label: "日本語", emoji: "🇯🇵" },
+  { value: "Korean", label: "한국어", emoji: "🇰🇷" },
+  { value: "Portuguese", label: "Português", emoji: "🇧🇷" },
+];
+
 const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestionsModalProps) => {
-  const [step, setStep] = useState(0); // 0-4: questions, 5: loading, 6: results
+  const [step, setStep] = useState(-1); // -1: language, 0-4: questions, 5: loading/results
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [suggestions, setSuggestions] = useState<SuggestedHabit[]>([]);
   const [addedHabits, setAddedHabits] = useState<Set<number>>(new Set());
@@ -98,11 +112,12 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
 
   if (!isOpen) return null;
 
-  const currentQuestion = questions[step];
+  const isLanguageStep = step === -1;
+  const currentQuestion = step >= 0 ? questions[step] : null;
   const isQuizDone = step === questions.length;
 
   const handleAnswer = async (value: string) => {
-    const newAnswers = { ...answers, [currentQuestion.id]: value };
+    const newAnswers = { ...answers, [currentQuestion!.id]: value };
     setAnswers(newAnswers);
 
     if (step < questions.length - 1) {
@@ -113,7 +128,7 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
       setIsLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke("suggest-habits", {
-          body: { answers: newAnswers },
+          body: { answers: newAnswers, language: selectedLanguage },
         });
 
         if (error) throw error;
@@ -141,7 +156,8 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
   };
 
   const handleRetake = () => {
-    setStep(0);
+    setStep(-1);
+    setSelectedLanguage("English");
     setAnswers({});
     setSuggestions([]);
     setAddedHabits(new Set());
@@ -177,15 +193,18 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
                 : "Your Personalized Habits"
               : "Personality Quiz"}
           </h2>
-          {!isQuizDone && (
+          {!isQuizDone && !isLanguageStep && (
             <p className="text-sm opacity-75 mt-1">
               Question {step + 1} of {questions.length}
             </p>
           )}
+          {isLanguageStep && (
+            <p className="text-sm opacity-75 mt-1">Choose your language</p>
+          )}
         </div>
 
         {/* Progress bar */}
-        {!isQuizDone && (
+        {!isQuizDone && !isLanguageStep && (
           <div className="h-1 bg-primary/20">
             <div
               className="h-full bg-primary transition-all duration-500"
@@ -195,8 +214,37 @@ const HabitSuggestionsModal = ({ isOpen, onClose, onAddHabit }: HabitSuggestions
         )}
 
         <div className="p-6">
+          {/* Language selection */}
+          {isLanguageStep && (
+            <div>
+              <div className="text-center mb-5">
+                <span className="text-4xl">🌍</span>
+                <h3 className="text-lg font-semibold mt-3">Pick your language</h3>
+                <p className="text-sm text-muted-foreground mt-1">Habits will be suggested in this language</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.value}
+                    onClick={() => {
+                      setSelectedLanguage(lang.value);
+                      setStep(0);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-xl border border-border bg-secondary/50 hover:bg-primary/5 hover:border-primary/30 transition-all text-left group"
+                  >
+                    <span className="text-xl">{lang.emoji}</span>
+                    <div>
+                      <span className="font-medium text-sm block">{lang.value}</span>
+                      <span className="text-xs text-muted-foreground">{lang.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quiz questions */}
-          {!isQuizDone && (
+          {!isQuizDone && !isLanguageStep && currentQuestion && (
             <div>
               <div className="text-center mb-6">
                 <span className="text-4xl">{currentQuestion.emoji}</span>

@@ -17,15 +17,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { answers }: { answers: PersonalityAnswers } = await req.json();
+    const { answers, language = "English" }: { answers: PersonalityAnswers; language?: string } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const systemPrompt = `You are a friendly habit coach. Based on a user's quiz answers, suggest 5 simple daily habits that will help them improve their life.
 
+    IMPORTANT: You MUST write ALL habit names and descriptions in ${language}. Use simple, everyday ${language} words.
+
     Rules for your suggestions:
-    - Use very simple, easy English that anyone can understand
     - Keep habit names short (2-5 words)
     - Write descriptions like you're talking to a friend - casual and warm
     - No big or fancy words - use everyday language
