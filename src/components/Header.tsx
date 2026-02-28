@@ -13,6 +13,7 @@ interface HeaderProps {
   currentMonth: Date;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  onToday: () => void;
   onAddHabit: () => void;
   userEmail?: string;
   userId?: string;
@@ -30,6 +31,7 @@ const Header = ({
   currentMonth,
   onPrevMonth,
   onNextMonth,
+  onToday,
   onAddHabit,
   userEmail,
   userId,
@@ -43,6 +45,8 @@ const Header = ({
   const [profileOpen, setProfileOpen] = useState(false);
   const monthName = currentMonth.toLocaleString("default", { month: "long" });
   const year = currentMonth.getFullYear();
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === currentMonth.getFullYear() && today.getMonth() === currentMonth.getMonth();
 
   return (
     <header className="mb-8">
@@ -79,6 +83,14 @@ const Header = ({
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+          {!isCurrentMonth && (
+            <button
+              onClick={onToday}
+              className="ml-1 px-2.5 py-1 rounded-lg gradient-bg text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity animate-fade-in"
+            >
+              Today
+            </button>
+          )}
         </div>
 
         {/* Actions */}

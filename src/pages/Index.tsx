@@ -81,6 +81,7 @@ const Index = () => {
           currentMonth={currentMonth}
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
+          onToday={() => setCurrentMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
           onAddHabit={() => setIsModalOpen(true)}
           userEmail={user.email}
           userId={user.id}
