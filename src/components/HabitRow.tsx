@@ -17,13 +17,17 @@ import {
 interface HabitRowProps {
   habit: Habit;
   daysInMonth: number;
+  currentMonth: Date;
   onToggleDay: (habitId: string, day: number) => void;
   onRemove: (habitId: string) => void;
   onEdit: (habit: Habit) => void;
 }
 
-const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRowProps) => {
+const HabitRow = ({ habit, daysInMonth, currentMonth, onToggleDay, onRemove, onEdit }: HabitRowProps) => {
   const [confirmUntick, setConfirmUntick] = useState<number | null>(null);
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === currentMonth.getFullYear() && today.getMonth() === currentMonth.getMonth();
+  const todayDay = isCurrentMonth ? today.getDate() : null;
   const progress = Math.min((habit.completedDays.length / habit.goal) * 100, 100);
   const progressColor = 
     habit.color === "success" ? "bg-success" :
@@ -95,6 +99,7 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
       <div className="flex flex-wrap gap-1.5">
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const isCompleted = habit.completedDays.includes(day);
+          const isToday = day === todayDay;
           return (
             <button
               key={day}
@@ -107,12 +112,12 @@ const HabitRow = ({ habit, daysInMonth, onToggleDay, onRemove, onEdit }: HabitRo
               }}
               className={`habit-cell ${
                 isCompleted ? "habit-cell-checked" : "habit-cell-unchecked"
-              }`}
+              } ${isToday ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}`}
             >
               {isCompleted ? (
                 <Check className="w-4 h-4 animate-scale-in" />
               ) : (
-                <span className="text-xs text-muted-foreground">{day}</span>
+                <span className={`text-xs ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}>{day}</span>
               )}
             </button>
           );

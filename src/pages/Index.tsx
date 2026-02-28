@@ -142,6 +142,7 @@ const Index = () => {
                 key={habit.id}
                 habit={habit}
                 daysInMonth={getDaysInMonth()}
+                currentMonth={currentMonth}
                 onToggleDay={toggleDay}
                 onRemove={removeHabit}
                 onEdit={setEditingHabit}
