@@ -26,7 +26,7 @@ interface HabitRowProps {
 const HabitRow = ({ habit, daysInMonth, currentMonth, onToggleDay, onRemove, onEdit }: HabitRowProps) => {
   const [confirmUntick, setConfirmUntick] = useState<number | null>(null);
   const today = new Date();
-  const isCurrentMonth = today.getFullYear() === currentMonth.getFullYear() && today.getMonth() === currentMonth.getMonth();
+  const isCurrentMonth = currentMonth ? (today.getFullYear() === currentMonth.getFullYear() && today.getMonth() === currentMonth.getMonth()) : false;
   const todayDay = isCurrentMonth ? today.getDate() : null;
   const progress = Math.min((habit.completedDays.length / habit.goal) * 100, 100);
   const progressColor = 
