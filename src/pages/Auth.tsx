@@ -21,6 +21,9 @@ const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -145,6 +148,48 @@ const Auth = () => {
             </button>
           </div>
 
+          {showForgot ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Enter your email and we'll send you a link to reset your password.</p>
+              <div className="space-y-2">
+                <Label htmlFor="forgotEmail">Email</Label>
+                <Input
+                  id="forgotEmail"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                />
+              </div>
+              <Button
+                className="w-full gradient-bg hover:opacity-90 transition-opacity"
+                disabled={forgotSubmitting}
+                onClick={async () => {
+                  const result = emailSchema.safeParse(forgotEmail);
+                  if (!result.success) {
+                    toast({ title: "Invalid email", description: result.error.errors[0].message, variant: "destructive" });
+                    return;
+                  }
+                  setForgotSubmitting(true);
+                  const { error } = await (await import("@/integrations/supabase/client")).supabase.auth.resetPasswordForEmail(forgotEmail, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  setForgotSubmitting(false);
+                  if (error) {
+                    console.error("Forgot password error:", error.message);
+                    toast({ title: "Error", description: "Unable to send reset email. Please try again.", variant: "destructive" });
+                  } else {
+                    toast({ title: "Check your email", description: "If an account exists, you'll receive a password reset link." });
+                  }
+                }}
+              >
+                {forgotSubmitting ? "Sending..." : "Send Reset Link"}
+              </Button>
+              <button onClick={() => setShowForgot(false)} className="text-sm text-primary hover:underline w-full text-center">
+                Back to login
+              </button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -208,6 +253,15 @@ const Auth = () => {
               )}
             </Button>
           </form>
+          )}
+
+          {!showForgot && isLogin && (
+            <p className="text-center mt-3">
+              <button onClick={() => setShowForgot(true)} className="text-sm text-primary hover:underline">
+                Forgot your password?
+              </button>
+            </p>
+          )}
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
