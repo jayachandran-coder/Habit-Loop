@@ -27,9 +27,15 @@ const ResetPassword = () => {
       }
     });
 
-    // Also check hash for recovery type
+    // Check hash and query params for recovery type
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (hash.includes("type=recovery") || searchParams.get("type") === "recovery") {
+      setIsRecovery(true);
+    }
+
+    // Also check if there's an access token in the hash (user came from reset link)
+    if (hash.includes("access_token")) {
       setIsRecovery(true);
     }
 
